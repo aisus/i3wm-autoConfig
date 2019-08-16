@@ -224,7 +224,7 @@ for_window [class=".*"] border pixel 0
 # for_window [class="^.*"] border pixel 0 floating enable
 # new_window 1pixel
 gaps inner 10
-gaps outer 25
+gaps outer 10
 # colors
 # class                      border   backgr.  text
 client.focused	             #315858  #315858  #111111
