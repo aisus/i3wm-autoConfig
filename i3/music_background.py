@@ -17,6 +17,11 @@ from img_processor import MetaData
 
 PLAYER_MGR = Playerctl.PlayerManager()
 IMAGE_PATH = '/tmp/music_bg.png'
+TESTING_IMG_NAME = 'testing.png'
+
+MODE_KEYS = ['sblur', 'bgblur', 'lgrad', 'rgrad']
+
+SELECTED_MODE = MODE_KEYS[0]
 
 def load_track_image_to_metadata(meta: MetaData):
     '''Searches for image for current track in web sources'''
@@ -68,7 +73,15 @@ def update_bg(meta: MetaData):
 
         # Calling for image processing procedure
         # TODO handle here concrete type of image effect
-        processed_image = processor.circle_and_blur(meta, WIDTH, HEIGHT)
+        if SELECTED_MODE == MODE_KEYS[0]:
+            processed_image = processor.circle_and_blur(meta, WIDTH, HEIGHT)
+        elif SELECTED_MODE == MODE_KEYS[1]:
+            processed_image = processor.predefined_image_with_album_in_circle(meta, WIDTH, HEIGHT)
+        elif SELECTED_MODE == MODE_KEYS[2]:
+            processed_image = processor.linear_gradient_with_circle(meta, WIDTH, HEIGHT)
+        elif SELECTED_MODE == MODE_KEYS[3]:
+            processed_image = processor.radial_gradient_with_circle(meta, WIDTH, HEIGHT)
+
         processed_image.save(IMAGE_PATH)
         subprocess.Popen(['feh', '--bg-center', IMAGE_PATH],
                          stderr=subprocess.PIPE,
@@ -113,7 +126,6 @@ def on_metadata_loaded(player, metadata, manager):
 def init_player(name):
     # choose if you want to manage the player based on the name
     # TODO: exclude mpv, vlc, mp.
-
     player = Playerctl.Player.new_from_name(name)
     player.connect('playback-status::playing', on_play, PLAYER_MGR)
     player.connect('playback-status::paused', on_pause, PLAYER_MGR)
@@ -134,7 +146,7 @@ def test_image_creation():
     '''Testing of image processing with local file'''
 
     bytes = []
-    with open("testing.png", "rb") as image:
+    with open(TESTING_IMG_NAME, "rb") as image:
         f = image.read()
         bytes = bytearray(f)
 
@@ -157,8 +169,12 @@ def prod_run():
     main.run()
 
 
-def parse_args(test=False):
+def parse_args(test=False, mode=None):
     '''Swithing between production environement and local image testing'''
+
+    if mode is not None and mode in MODE_KEYS:
+        global SELECTED_MODE 
+        SELECTED_MODE = mode
 
     if (test):
         test_image_creation()
